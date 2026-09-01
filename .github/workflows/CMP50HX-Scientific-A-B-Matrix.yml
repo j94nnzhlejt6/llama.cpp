@@ -27,6 +27,10 @@ jobs:
         uses: Jimver/cuda-toolkit@v0.2.36
         with:
           cuda: '12.8.0'
+      - name: Setup MSVC compiler environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Compile dp4a-emulation unit gate
         shell: pwsh
