@@ -186,16 +186,20 @@ jobs:
                           Copy-Item $cuda (Join-Path $OutDir $d) -Force
                           $queue.Enqueue((Join-Path $OutDir $d))
                       }
-                      elseif ($d -in 'vcruntime140.dll', 'vcruntime140_1.dll', 'msvcp140.dll') {
-                          $sys = Join-Path $env:SystemRoot "System32/$d"
-                          if (-not (Test-Path $sys)) {
-                              throw "VC++ runtime dependency '$d' not found on CI runner"
-                          }
-                          Write-Host "System dependency: $d (not bundled — install VC++ Redistributable x64 locally)"
+                  elseif ($d -in 'vcruntime140.dll', 'vcruntime140_1.dll', 'msvcp140.dll') {
+                      $sys = Join-Path $env:SystemRoot "System32/$d"
+                      if (-not (Test-Path $sys)) {
+                          throw "VC++ runtime dependency '$d' not found on CI runner"
                       }
-                      elseif ($d -eq 'nvcuda.dll' -or $d -like 'api-ms-*') {
-                      }
-                      else { throw "Unresolved dependency '$d' (imported by $img)" }
+                      Write-Host "System dependency: $d (not bundled — install VC++ Redistributable x64 locally)"
+                  }
+                  elseif ($d -eq 'nvcuda.dll' -or $d -like 'api-ms-*') {
+                      # драйвер и UCRT-стабы — системные, app-local копировать нельзя
+                  }
+                  elseif ($d -in 'kernel32.dll', 'user32.dll', 'gdi32.dll', 'advapi32.dll', 'shell32.dll', 'ole32.dll', 'oleaut32.dll', 'uuid.dll', 'ws2_32.dll', 'wldap32.dll', 'crypt32.dll', 'normaliz.dll', 'psapi.dll', 'dbghelp.dll', 'version.dll', 'winhttp.dll', 'iphlpapi.dll', 'secur32.dll', 'bcrypt.dll', 'winmm.dll', 'setupapi.dll', 'cfgmgr32.dll', 'powrprof.dll', 'propsys.dll', 'shlwapi.dll', 'mpr.dll', 'msimg32.dll', 'wininet.dll', 'winspool.drv', 'comctl32.dll', 'comdlg32.dll', 'imm32.dll', 'uxtheme.dll', 'dwmapi.dll') {
+                      # Windows system DLLs — loaded from System32 by OS loader, never copy app-local
+                  }
+                  else { throw "Unresolved dependency '$d' (imported by $img)" }
                   }
               }
           }
